@@ -150,11 +150,12 @@ npx playwright test --project="Pixel 5 (Android)"
   1. Checkout repository
   2. Setup Node.js (v18)
   3. Install dependencies (`npm ci`)
-  4. Run Jest tests (`npm test`)
+  4. Install Playwright browsers (`npx playwright install --with-deps`)
+  5. Run Playwright tests (`npx playwright test --reporter=html`)
+  6. Upload test report (HTML report as artifact)
+  7. Upload test results (screenshots/videos on failure)
 
-### 3. CI Run
-- GitHub Actions workflow successfully executed tests.
-- ![alt text](image.png)
+
 
 
 

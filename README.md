@@ -146,6 +146,7 @@ npx playwright test --project="Pixel 5 (Android)"
   - `push` to `main` or any `feature/*` branch  
   - Pull requests
 - Uses **Windows runner**: `runs-on: windows-latest`  
+
 - Steps executed:
   1. Checkout repository
   2. Setup Node.js (v18)

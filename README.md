@@ -10,7 +10,7 @@ Clone the repository and install dependencies:
 
 ```sh
 git clone https://github.com/harishyml/mobile-automation-framework.git
-cd mobile-automation
+cd mobile-automation-playwright
 npm install
 ```
 ---

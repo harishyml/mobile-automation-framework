@@ -157,6 +157,11 @@ npx playwright test --project="Pixel 5 (Android)"
   7. Upload test results (screenshots/videos on failure)
 
 
+## GitHub Actions CI Workflow
+- GitHub Actions workflow successfully executed tests.
+  ![alt text](image.png)
+
+
 
 
 

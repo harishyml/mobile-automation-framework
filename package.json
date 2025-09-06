@@ -3,9 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+ "scripts": {
+  "test": "npx playwright test",
+  "test:report": "npx playwright test --reporter=html,./github/githubReporter.js",
+  "test:headed": "npx playwright test --headed",
+  "test:debug": "npx playwright test --debug"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",

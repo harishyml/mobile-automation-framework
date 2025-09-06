@@ -1,6 +1,5 @@
 const { Octokit } = require("@octokit/rest");
 
-// Utility to remove ANSI escape codes from error messages
 function stripAnsi(str) {
   if (!str) return "";
   return str.replace(
@@ -11,50 +10,65 @@ function stripAnsi(str) {
 
 class GitHubReporter {
   constructor(config) {
-    this.finalFailures = [];
-    // maxRetries from config or default to 0
+    this.finalFailures = new Map();
     this.maxRetries = config?.retries ?? 0;
 
-    // Initialize Octokit only if running in CI with a GitHub token
     if (process.env.GITHUB_ACTIONS && process.env.GH_TOKEN) {
       this.octokit = new Octokit({ auth: process.env.GH_TOKEN });
-      this.owner = "harishyml";       // Update your GitHub username
-      this.repo = "mobile-automation-framework"; // Update your repo
+      this.owner = "harishyml";
+      this.repo = "mobile-automation-framework";
     } else {
-      this.octokit = null; // Silent when running locally
+      this.octokit = null;
     }
   }
 
+ 
   onTestEnd(test, result) {
-    // Determine the maximum retries for this test
-    const maxRetries = result._retries ?? this.maxRetries;
+    const maxRetries = test.retries ?? this.maxRetries;
 
-    // Only push final failures (after all retries exhausted)
     if (result.status === "failed" && result.retry === maxRetries) {
-      this.finalFailures.push({
-        title: test.title,
-        error: stripAnsi(result.error?.message),
-        path: test.location?.file || "N/A",
+      const { title, location, error } = test;
+      const errorMessage = stripAnsi(error?.message);
+
+      const platform = test.titlePath().slice(-2, -1)[0];
+
+      const currentEntry = this.finalFailures.get(title) || {
+        title: title,
+        errors: [],
+        path: location?.file || "N/A"
+      };
+
+      currentEntry.errors.push({
+        platform,
+        message: errorMessage
       });
+
+      this.finalFailures.set(title, currentEntry);
     }
   }
 
   async onEnd() {
-    // Exit if no failures or running locally
-    if (!this.octokit || !this.finalFailures.length) return;
+    if (!this.octokit || this.finalFailures.size === 0) return;
 
-    const body = this.finalFailures
-      .map(
-        (f, i) => `
+    const body = Array.from(this.finalFailures.values())
+      .map((f, i) => {
+        const errorList = f.errors.map(err => `
+- **Platform**: ${err.platform}
+- **Error**: ${err.message}
+        `).join("\n");
+
+        return `
 ### Test Failed #${i + 1}
 - **Test**: ${f.title}
 - **File**: ${f.path}
-- **Error**: ${f.error}
+
+**Failures by Platform:**
+${errorList}
 
 Artifacts (screenshots/videos):
 - [Playwright Report](../actions/runs/${process.env.GITHUB_RUN_ID})
-`
-      )
+`;
+      })
       .join("\n");
 
     try {
@@ -64,9 +78,9 @@ Artifacts (screenshots/videos):
         title: `Test Failures in CI run ${process.env.GITHUB_RUN_ID}`,
         body,
       });
-      console.log("Created GitHub issue for final test failures.");
+      console.log("Created a consolidated GitHub issue for final test failures.");
     } catch (err) {
-      console.error("Failed to create GitHub issue:", err);
+      console.error("Failed to create GitHub issue:", err.message || err);
     }
   }
 }

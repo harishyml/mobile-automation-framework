@@ -1,6 +1,5 @@
 const { Octokit } = require("@octokit/rest");
 
-// Remove ANSI escape codes from Playwright errors
 function stripAnsi(str) {
   if (!str) return "";
   return str.replace(
@@ -12,16 +11,16 @@ function stripAnsi(str) {
 class GitHubReporter {
   constructor() {
     this.octokit = new Octokit({
-      auth: process.env.GH_TOKEN, // GitHub Actions secret
+      auth: process.env.GH_TOKEN,
     });
-    this.owner = "harishyml"; 
-    this.repo = "mobile-automation-framework"; 
-    this.failures = [];
+    this.owner = "harishyml";
+    this.repo = "mobile-automation-framework";
+    this.finalFailures = [];
   }
 
   onTestEnd(test, result) {
-    if (result.status === "failed") {
-      this.failures.push({
+    if (result.status === "failed" && !result.retry) {
+      this.finalFailures.push({
         title: test.title,
         error: result.error ? stripAnsi(result.error.message) : "Unknown error",
         path: test.location ? test.location.file : "N/A",
@@ -30,12 +29,12 @@ class GitHubReporter {
   }
 
   async onEnd() {
-    if (this.failures.length === 0) {
+    if (this.finalFailures.length === 0) {
       console.log("All tests passed. No GitHub issue created.");
       return;
     }
 
-    const body = this.failures
+    const body = this.finalFailures
       .map(
         (f, i) => `
 ### Test Failed #${i + 1}

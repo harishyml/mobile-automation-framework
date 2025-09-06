@@ -10,6 +10,7 @@ function stripAnsi(str) {
 
 class GitHubReporter {
   constructor(config) {
+
     this.finalFailures = new Map();
     this.maxRetries = config?.retries ?? 0;
 
@@ -22,39 +23,39 @@ class GitHubReporter {
     }
   }
 
- 
   onTestEnd(test, result) {
     const maxRetries = test.retries ?? this.maxRetries;
 
     if (result.status === "failed" && result.retry === maxRetries) {
-      const { title, location, error } = test;
-      const errorMessage = stripAnsi(error?.message);
+      const { title, location } = test;
+      const errorMessage = stripAnsi(result.error?.message);
+      
+      const platform = test.project?.name || "N/A";
 
-      const platform = test.titlePath().slice(-2, -1)[0];
-
-      const currentEntry = this.finalFailures.get(title) || {
-        title: title,
-        errors: [],
-        path: location?.file || "N/A"
-      };
+      let currentEntry = this.finalFailures.get(title);
+      if (!currentEntry) {
+        currentEntry = {
+          title: title,
+          errors: [],
+          path: location?.file || "N/A"
+        };
+        this.finalFailures.set(title, currentEntry);
+      }
 
       currentEntry.errors.push({
-        platform,
+        platform: platform,
         message: errorMessage
       });
-
-      this.finalFailures.set(title, currentEntry);
     }
   }
 
   async onEnd() {
     if (!this.octokit || this.finalFailures.size === 0) return;
-
     const body = Array.from(this.finalFailures.values())
       .map((f, i) => {
         const errorList = f.errors.map(err => `
 - **Platform**: ${err.platform}
-- **Error**: ${err.message}
+- **Error**: ${err.message || 'No error message provided.'}
         `).join("\n");
 
         return `

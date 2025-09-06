@@ -19,7 +19,7 @@ class GitHubReporter {
   }
 
   onTestEnd(test, result) {
-    if (result.status === "failed" && !result.retry) {
+    if (result.status === "failed" && result.retry === test.retries()) {
       this.finalFailures.push({
         title: test.title,
         error: result.error ? stripAnsi(result.error.message) : "Unknown error",

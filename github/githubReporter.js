@@ -31,7 +31,7 @@ class GitHubReporter {
       const { title, location } = test;
       const errorMessage = stripAnsi(result.error?.message);
       
-      const platform = test.project?.name || "N/A";
+      const platform = test.parent?.project?.name || test.project?.name || "N/A";
 
       let currentEntry = this.finalFailures.get(title);
       if (!currentEntry) {

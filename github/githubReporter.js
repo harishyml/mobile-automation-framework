@@ -14,9 +14,9 @@ class GitHubReporter {
     this.finalFailures = new Map();
     this.maxRetries = config?.retries ?? 0;
 
-
     if (process.env.GITHUB_ACTIONS && process.env.GH_TOKEN) {
       this.octokit = new Octokit({ auth: process.env.GH_TOKEN });
+
       this.owner = "harishyml";
       this.repo = "mobile-automation-framework";
     } else {
@@ -27,12 +27,11 @@ class GitHubReporter {
 
   onTestEnd(test, result) {
     const maxRetries = test.retries ?? this.maxRetries;
+
     if (result.status === "failed" && result.retry === maxRetries) {
       const { title, location } = test;
       const errorMessage = stripAnsi(result.error?.message);
       
-      const platform = test.parent?.project?.name || test.project?.name || "N/A";
-
       let currentEntry = this.finalFailures.get(title);
       if (!currentEntry) {
         currentEntry = {
@@ -44,21 +43,16 @@ class GitHubReporter {
       }
 
       currentEntry.errors.push({
-        platform: platform,
         message: errorMessage
       });
     }
   }
 
-
   async onEnd() {
- 
     if (!this.octokit || this.finalFailures.size === 0) return;
 
     const body = Array.from(this.finalFailures.values())
       .map((f, i) => {
-        
-        const uniquePlatforms = [...new Set(f.errors.map(err => err.platform))];
         const uniqueErrors = [...new Set(f.errors.map(err => err.message || 'No error message provided.'))];
 
         return `
@@ -67,7 +61,6 @@ class GitHubReporter {
 - **File**: ${f.path}
 
 **Summary of Failures:**
-- **Platforms**: ${uniquePlatforms.join(' and ')}
 - **Errors**:
 ${uniqueErrors.map(err => `  - ${err}`).join('\n')}
 

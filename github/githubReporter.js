@@ -10,9 +10,10 @@ function stripAnsi(str) {
 
 class GitHubReporter {
   constructor(config) {
- 
+  
     this.finalFailures = new Map();
     this.maxRetries = config?.retries ?? 0;
+
 
     if (process.env.GITHUB_ACTIONS && process.env.GH_TOKEN) {
       this.octokit = new Octokit({ auth: process.env.GH_TOKEN });
@@ -26,13 +27,11 @@ class GitHubReporter {
 
   onTestEnd(test, result) {
     const maxRetries = test.retries ?? this.maxRetries;
-
-  
     if (result.status === "failed" && result.retry === maxRetries) {
       const { title, location } = test;
       const errorMessage = stripAnsi(result.error?.message);
       
-      const platform = test.project()?.name || "N/A";
+      const platform = test.project?.name || "N/A";
 
       let currentEntry = this.finalFailures.get(title);
       if (!currentEntry) {
@@ -53,10 +52,12 @@ class GitHubReporter {
 
 
   async onEnd() {
+ 
     if (!this.octokit || this.finalFailures.size === 0) return;
 
     const body = Array.from(this.finalFailures.values())
       .map((f, i) => {
+        
         const uniquePlatforms = [...new Set(f.errors.map(err => err.platform))];
         const uniqueErrors = [...new Set(f.errors.map(err => err.message || 'No error message provided.'))];
 

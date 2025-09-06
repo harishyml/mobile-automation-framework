@@ -1,5 +1,6 @@
 const { Octokit } = require("@octokit/rest");
 
+// Utility to remove ANSI escape codes from error messages
 function stripAnsi(str) {
   if (!str) return "";
   return str.replace(
@@ -10,18 +11,26 @@ function stripAnsi(str) {
 
 class GitHubReporter {
   constructor(config) {
-    this.octokit = new Octokit({
-      auth: process.env.GH_TOKEN,
-    });
-    this.owner = "harishyml";
-    this.repo = "mobile-automation-framework";
-    this.maxRetries = config?.retries ?? 0;
     this.finalFailures = [];
+    // maxRetries from config or default to 0
+    this.maxRetries = config?.retries ?? 0;
+
+    // Initialize Octokit only if running in CI with a GitHub token
+    if (process.env.GITHUB_ACTIONS && process.env.GH_TOKEN) {
+      this.octokit = new Octokit({ auth: process.env.GH_TOKEN });
+      this.owner = "harishyml";       // Update your GitHub username
+      this.repo = "mobile-automation-framework"; // Update your repo
+    } else {
+      this.octokit = null; // Silent when running locally
+    }
   }
 
   onTestEnd(test, result) {
-    // Only collect failures if this was the last retry
-    if (result.status === "failed" && result.retry === this.maxRetries) {
+    // Determine the maximum retries for this test
+    const maxRetries = result._retries ?? this.maxRetries;
+
+    // Only push final failures (after all retries exhausted)
+    if (result.status === "failed" && result.retry === maxRetries) {
       this.finalFailures.push({
         title: test.title,
         error: stripAnsi(result.error?.message),
@@ -31,10 +40,8 @@ class GitHubReporter {
   }
 
   async onEnd() {
-    if (!this.finalFailures.length) {
-      console.log("All tests passed or flaky tests passed on retry. No issues created.");
-      return;
-    }
+    // Exit if no failures or running locally
+    if (!this.octokit || !this.finalFailures.length) return;
 
     const body = this.finalFailures
       .map(

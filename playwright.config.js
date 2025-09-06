@@ -3,6 +3,7 @@ const { devices } = require('@playwright/test');
 module.exports = {
   retries: 2,
    reporter: [
+    ["list"],
     ["html", { outputFolder: "reports/html" }],
      ["./github/githubReporter.js"], 
   ],

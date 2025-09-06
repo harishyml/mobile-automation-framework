@@ -15,12 +15,12 @@ class GitHubReporter {
     });
     this.owner = "harishyml";
     this.repo = "mobile-automation-framework";
-    this.finalFailures = [];
-  
     this.maxRetries = config?.retries ?? 0;
+    this.finalFailures = [];
   }
 
   onTestEnd(test, result) {
+    // Only collect failures if this was the last retry
     if (result.status === "failed" && result.retry === this.maxRetries) {
       this.finalFailures.push({
         title: test.title,

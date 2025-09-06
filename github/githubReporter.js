@@ -22,7 +22,7 @@ class GitHubReporter {
 
   async onEnd(result) {
     if (this.failures.length === 0) {
-      console.log("✅ All tests passed. No issues created.");
+      console.log("All tests passed. No issues created.");
       return;
     }
 

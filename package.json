@@ -12,5 +12,8 @@
   "devDependencies": {
     "@playwright/test": "^1.55.0",
     "playwright": "^1.55.0"
+  },
+  "dependencies": {
+    "@octokit/rest": "^22.0.0"
   }
 }

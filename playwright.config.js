@@ -1,8 +1,12 @@
 const { devices } = require('@playwright/test');
+const GitHubReporter = require("./github/githubReporter");
 
 module.exports = {
   retries: 2,
-  reporter: [['html', { outputFolder: 'reports/html' }]],
+   reporter: [
+    ["html", { outputFolder: "reports/html" }],
+    [GitHubReporter], 
+  ],
   projects: [
     {
       name: 'iPhone 13',

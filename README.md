@@ -147,14 +147,16 @@ npx playwright test --project="Pixel 5 (Android)"
   - Pull requests
 - Uses **Windows runner**: `runs-on: windows-latest`  
 
-- Steps executed:
+- **Steps executed:**
   1. Checkout repository
   2. Setup Node.js (v18)
   3. Install dependencies (`npm ci`)
   4. Install Playwright browsers (`npx playwright install --with-deps`)
-  5. Run Playwright tests (`npx playwright test --reporter=html`)
+  5. Run Playwright tests with custom GitHub Reporter (`npx playwright test --reporter=html,./githubReporter.js`)
   6. Upload test report (HTML report as artifact)
   7. Upload test results (screenshots/videos on failure)
+  8. Automated issue creation on test failure (GitHub issue created with failed test info and artifact links)
+
 
 
 ## CI Run Action Flow Sceenshot

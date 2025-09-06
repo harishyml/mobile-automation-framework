@@ -9,28 +9,30 @@ function stripAnsi(str) {
 }
 
 class GitHubReporter {
-  constructor() {
+  constructor(config) {
     this.octokit = new Octokit({
       auth: process.env.GH_TOKEN,
     });
     this.owner = "harishyml";
     this.repo = "mobile-automation-framework";
     this.finalFailures = [];
+  
+    this.maxRetries = config?.retries ?? 0;
   }
 
   onTestEnd(test, result) {
-    if (result.status === "failed" && result.retry === test.retries()) {
+    if (result.status === "failed" && result.retry === this.maxRetries) {
       this.finalFailures.push({
         title: test.title,
-        error: result.error ? stripAnsi(result.error.message) : "Unknown error",
-        path: test.location ? test.location.file : "N/A",
+        error: stripAnsi(result.error?.message),
+        path: test.location?.file || "N/A",
       });
     }
   }
 
   async onEnd() {
-    if (this.finalFailures.length === 0) {
-      console.log("All tests passed. No GitHub issue created.");
+    if (!this.finalFailures.length) {
+      console.log("All tests passed or flaky tests passed on retry. No issues created.");
       return;
     }
 
@@ -55,7 +57,7 @@ Artifacts (screenshots/videos):
         title: `Test Failures in CI run ${process.env.GITHUB_RUN_ID}`,
         body,
       });
-      console.log("Created GitHub issue for test failures.");
+      console.log("Created GitHub issue for final test failures.");
     } catch (err) {
       console.error("Failed to create GitHub issue:", err);
     }

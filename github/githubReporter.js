@@ -1,43 +1,36 @@
 const { Octokit } = require("@octokit/rest");
 
-// Remove ANSI color codes from Playwright error messages
-function stripAnsi(str) {
-  return str.replace(
-    /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
-    ''
-  );
-}
-
 class GitHubReporter {
   constructor() {
     this.octokit = new Octokit({
-      auth: process.env.GH_TOKEN, // GitHub Actions secret 
+      auth: process.env.GH_TOKEN, // GitHub Actions secret
     });
-    this.owner = "harishyml";
-    this.repo = "mobile-automation-framework";
+    this.owner = "harishyml"; 
+    this.repo = "mobile-automation-framework"; 
     this.failures = [];
   }
 
+
   onTestEnd(test, result) {
-    if (result.status === "failed" && result.retry === result.project.retries) {
+    if (result.status === "failed") {
       this.failures.push({
         title: test.title,
-        error: result.error ? stripAnsi(result.error.message) : "Unknown error",
+        error: result.error ? result.error.message : "Unknown error",
         path: test.location ? test.location.file : "N/A",
       });
     }
   }
 
+  // Called after all tests finish
   async onEnd() {
     if (this.failures.length === 0) {
-      console.log("All tests passed or flaky tests recovered. No issues created.");
+      console.log("All tests passed. No GitHub issue created.");
       return;
     }
 
     const body = this.failures
       .map(
-        (f, i) => `
-### Test Failed #${i + 1}
+        (f, i) => `### Test Failed #${i + 1}
 - **Test**: ${f.title}
 - **File**: ${f.path}
 - **Error**: ${f.error}

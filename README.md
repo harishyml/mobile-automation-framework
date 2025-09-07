@@ -65,32 +65,34 @@ npx playwright test --project="Pixel 5 (Android)"
 ## Flows & Scenarios Covered
 
 - **Login**  
-  - Valid login (multiple users from `users.json`)  
-  - Invalid login (locked user, wrong credentials) 
+  - Valid login (using multiple users from `users.json`)  
+  - Invalid login (locked user, wrong credentials)  
 
 - **Navigation and Logout**  
-  - Navigate between products and logout
+  - Navigate between products  
+  - Logout functionality  
 
 - **Cart Management**  
-  - Add single product
-  - Add multiple products (data-driven from `products.json`)  
+  - Add a single product to the cart  
+  - Add multiple products to the cart (data-driven from `products.json`)  
 
- - **Checkout**  
-  - Fill form inputs (first name, last name, zip)
-  - Complete checkout flow
+- **Checkout**  
+  - Fill form inputs (first name, last name, zip code)  
+  - Complete checkout flow  
 
- - **Error Validation**  
-  - Invalid login error messages
-  - Complete checkout flow
+- **Error Validation**  
+  - Validate error messages for invalid login attempts  
+  - Validate checkout process error handling  
 
- - **Intentional Failures**  
-  - Added to verify defect auto-creation flow with GitHub Issues  
+- **Intentional Failures**  
+  - Added failing tests to verify defect auto-creation workflow with GitHub Issues  
 
- - **Flaky Tests**  
+- **Flaky Tests**  
   - Designed to fail on the first run and pass on retry (to validate retry logic)  
 
- - **Responsive Layout**  
-  - Check UI on different mobile viewports
+- **Responsive Layout**  
+  - Check UI rendering and interactions on different mobile viewports (iPhone 13, Pixel 5)
+
    
 ---
 

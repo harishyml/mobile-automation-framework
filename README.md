@@ -103,16 +103,16 @@ npx playwright test --project="Pixel 5 (Android)"
 
  ## Design Notes
 
-- **Page Object Model(POM)** 
+- **Page Object Model(POM):** 
    - Each screen (Login, Product, Home) has its own class for reusability.
 
-- **Data-Driven Tests** 
+- **Data-Driven Tests:** 
   - Credentials and product sets are read from JSON files.
 
 - **Flaky Test Handling:**  
  - Configured retries: 2 in `Playwright config.js` and Sample flaky test included.
    
-- **Wait Strategies**   
+- **Wait Strategies:**   
   - Explicit waits (toBeVisible, toHaveCount) used for reliable assertions.
 
 - **Reporting & Logging:**  
@@ -125,6 +125,10 @@ npx playwright test --project="Pixel 5 (Android)"
 
 - **Reporting:**  
   - Jest HTML reports make it easy to see test results.
+
+- **Parallel Execution:**  
+  - By default, Playwright executes tests in parallel across available workers.
+  - If needed, tests can be configured to run sequentially by adjusting the worker settings in `playwright.config.js`
 
 
 
